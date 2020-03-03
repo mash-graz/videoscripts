@@ -81,7 +81,7 @@ def makeOutDir(videofile):
     elif os.path.exists(newoutdir) and not USE_UNIQUE_OUTDIR:
         #remove previous contents if reusing outdir
         files = os.listdir(newoutdir)
-        print "Removing previous contents of output directory: %s" % newoutdir
+        print("Removing previous contents of output directory: %s" % newoutdir)
         for f in files:
             os.unlink(os.path.join(newoutdir,f))
     return newoutdir
@@ -92,7 +92,7 @@ def doCmd(cmd,logger=logger):  #execute a shell command and return/print its out
     output = None
     try:
         output = subprocess.check_output(args, stderr=subprocess.STDOUT) #pipe stderr into stdout
-    except Exception, e:
+    except Exception as e:
         ret = "ERROR   [%s] An exception occurred\n%s\n%s" % (datetime.datetime.now(),output,str(e))
         logger.error(ret)
         raise e #todo ?
@@ -271,7 +271,7 @@ def addLogging():
         basescript = os.path.splitext(os.path.basename(sys.argv[0]))[0]
         LOG_FILENAME = 'logs/%s.%s.log'% (basescript,datetime.datetime.now().strftime("%Y%m%d_%H%M%S")) #new log per job so we can run this program concurrently
         #CONSOLE AND FILE LOGGING
-        print "Writing log to: %s" % LOG_FILENAME
+        print("Writing log to: %s" % LOG_FILENAME)
         if not os.path.exists('logs'):
             os.makedirs('logs')
         logger.setLevel(logging.DEBUG)
