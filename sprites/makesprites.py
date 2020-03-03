@@ -224,6 +224,11 @@ def makesprite(outdir,spritefile,coords,gridsize):
     cmd = "montage %s/tv*.jpg -tile %s -geometry %s %s" % (pipes.quote(outdir), grid, coords, pipes.quote(spritefile))#if video had more than 144 thumbs, would need to be bigger grid, making it big to cover all our case
     doCmd(cmd)
 
+def cleanup(outdir):
+    "remove the individual thumbs"
+    cmd = ("rm %s" % ' '.join(map(lambda x: ('"%s"'%x), get_thumb_images(outdir))))
+    doCmd(cmd)
+
 def writevtt(vttfile,contents):
     """ output VTT file """
     with open(vttfile,mode="w") as h:
@@ -263,6 +268,7 @@ def run(task, thumbRate=None):
 
     #convert small files into a single sprite grid
     makesprite(outdir,spritefile,coords,gridsize)
+    cleanup(outdir)
 
     #generate a vtt with coordinates to each image in sprite
     makevtt(spritefile,numfiles,coords,gridsize,task.getVTTFile(), thumbRate=thumbRate)
