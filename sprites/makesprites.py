@@ -276,18 +276,20 @@ def run(task, thumbRate=None):
 def addLogging():
     global logSetup
     if not logSetup:
-        basescript = os.path.splitext(os.path.basename(sys.argv[0]))[0]
-        LOG_FILENAME = 'logs/%s.%s.log'% (basescript,datetime.datetime.now().strftime("%Y%m%d_%H%M%S")) #new log per job so we can run this program concurrently
-        #CONSOLE AND FILE LOGGING
-        print("Writing log to: %s" % LOG_FILENAME)
-        if not os.path.exists('logs'):
-            os.makedirs('logs')
-        logger.setLevel(logging.DEBUG)
-        handler = logging.FileHandler(LOG_FILENAME)
-        logger.addHandler(handler)
+        if LOG_FILENAME:
+            #FILE LOGGING
+            print("Writing log to: %s" % LOG_FILENAME)
+            logs_dir = os.path.split(LOG_FILENAME)[0]
+            if logs_dir and not os.path.exists(logs_dir):
+                os.makedirs(logs_dir)
+            handler = logging.FileHandler(LOG_FILENAME)
+            handler.setLevel(logging.DEBUG)
+            logger.addHandler(handler)
+        #CONSOLE LOGGING
         ch = logging.StreamHandler()
-        ch.setLevel(logging.DEBUG)
+        ch.setLevel(logging.WARNING)
         logger.addHandler(ch)
+        logger.setLevel(logging.DEBUG)
         logSetup = True #set flag so we don't reset log in same batch
 
 
@@ -299,6 +301,8 @@ if __name__ == "__main__":
         default=THUMB_RATE_SECONDS, type=int)
     parser.add_argument('-w', '--width', help='width of thum images.',
         default=THUMB_WIDTH, type=int)
+    parser.add_argument('--log_file', help="path to verbose log file.", 
+        default="")
     parser.add_argument('videofile', help='full path or url to the video file for which to create thumbnails.')
     parser.add_argument('out_dir', help='output directory.', nargs='?', default=THUMB_OUTDIR)
     args = parser.parse_args()
@@ -306,6 +310,7 @@ if __name__ == "__main__":
     THUMB_RATE_SECONDS = args.thumb_rate
     THUMB_WIDTH = args.width
     THUMB_OUTDIR = args.out_dir
+    LOG_FILENAME = args.log_file
     videofile = args.videofile
 
     task = SpriteTask(videofile)
