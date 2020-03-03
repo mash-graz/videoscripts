@@ -7,8 +7,8 @@ import datetime
 import math
 import glob
 import pipes
+import argparse
 from distutils.spawn import find_executable
-from dateutil import relativedelta
 ##################################
 # Generate tooltip thumbnail images & corresponding WebVTT file for a video (e.g MP4).
 # Final product is one *_sprite.jpg file and one *_thumbs.vtt file.
@@ -202,8 +202,10 @@ def get_time_str(numseconds,adjust=None):
         seconds = max(numseconds + adjust, 0) #don't go below 0! can't have a negative timestamp
     else:
         seconds = numseconds
-    delta = relativedelta.relativedelta(seconds=seconds)
-    return "%02d:%02d:%02d.000" % (delta.hours,delta.minutes, delta.seconds)
+    h = seconds // 3600
+    m = (seconds - h*3600) // 60
+    s = (seconds - h*3600 - m*60) 
+    return "%02d:%02d:%02d.000" % (h, m, s)
 
 def get_grid_coordinates(imgnum,gridsize,w,h):
     """ given an image number in our sprite, map the coordinates to it in X,Y,W,H format"""
@@ -284,10 +286,21 @@ def addLogging():
 
 
 if __name__ == "__main__":
-    if not len(sys.argv) > 1 :
-        sys.exit("Please pass the full path or url to the video file for which to create thumbnails.")
-    if len(sys.argv) == 3:
-        THUMB_OUTDIR = sys.argv[2]
-    videofile = sys.argv[1]
+
+    parser = argparse.ArgumentParser(description='generate sprites.',
+        formatter_class=argparse.ArgumentDefaultsHelpFormatter)
+    parser.add_argument('-r','--thumb_rate', help='every Nth second take a snapshot.', 
+        default=THUMB_RATE_SECONDS, type=int)
+    parser.add_argument('-w', '--width', help='width of thum images.',
+        default=THUMB_WIDTH, type=int)
+    parser.add_argument('videofile', help='full path or url to the video file for which to create thumbnails.')
+    parser.add_argument('out_dir', help='output directory.', nargs='?', default=THUMB_OUTDIR)
+    args = parser.parse_args()
+
+    THUMB_RATE_SECONDS = args.thumb_rate
+    THUMB_WIDTH = args.width
+    THUMB_OUTDIR = args.out_dir
+    videofile = args.videofile
+
     task = SpriteTask(videofile)
     run(task)
