@@ -7,6 +7,7 @@ import datetime
 import math
 import glob
 import pipes
+from distutils.spawn import find_executable
 from dateutil import relativedelta
 ##################################
 # Generate tooltip thumbnail images & corresponding WebVTT file for a video (e.g MP4).
@@ -24,15 +25,15 @@ from dateutil import relativedelta
 
 #TODO determine optimal number of images/segment distance based on length of video? (so longer videos don't have huge sprites)
 
-USE_SIPS = True #True to use sips if using MacOSX (creates slightly smaller sprites), else set to False to use ImageMagick
-THUMB_RATE_SECONDS=45 # every Nth second take a snapshot
-THUMB_WIDTH=100 #100-150 is width recommended by JWPlayer; I like smaller files
+USE_SIPS = bool(find_executable('sips')) #True to use sips if using MacOSX (creates slightly smaller sprites), else set to False to use ImageMagick
+THUMB_RATE_SECONDS=10 # every Nth second take a snapshot
+THUMB_WIDTH=320 #100-150 is width recommended by JWPlayer; I like smaller files
 SKIP_FIRST=True #True to skip a thumbnail of second 1; often not a useful image, plus JWPlayer doesn't seem to show it anyway, and user knows beginning without needing preview
 SPRITE_NAME = "sprite.jpg" #jpg is much smaller than png, so using jpg
 VTTFILE_NAME = "thumbs.vtt"
 THUMB_OUTDIR = "thumbs"
 USE_UNIQUE_OUTDIR = False #true to make a unique timestamped output dir each time, else False to overwrite/replace existing outdir
-TIMESYNC_ADJUST = -.5 #set to 1 to not adjust time (gets multiplied by thumbRate); On my machine,ffmpeg snapshots show earlier images than expected timestamp by about 1/2 the thumbRate (for one vid, 10s thumbrate->images were 6s earlier than expected;45->22s early,90->44 sec early)
+TIMESYNC_ADJUST = -1 #set to -1 to not adjust time (gets multiplied by thumbRate); On my machine,ffmpeg snapshots show earlier images than expected timestamp by about 1/2 the thumbRate (for one vid, 10s thumbrate->images were 6s earlier than expected;45->22s early,90->44 sec early)
 logger = logging.getLogger(sys.argv[0])
 logSetup=False
 
@@ -187,7 +188,7 @@ def makevtt(spritefile,numsegments,coords,gridsize,writefile,thumbRate=None):
         end  = get_time_str(clipend,adjust=adjust)
         clipstart = clipend
         clipend += thumbRate
-        vtt.append("Img %d" % imgnum)
+        # vtt.append("Img %d" % imgnum)
         vtt.append("%s --> %s" % (start,end)) #00:00.000 --> 00:05.000
         vtt.append("%s#xywh=%s" % (basefile,xywh))
         vtt.append("") #Linebreak
